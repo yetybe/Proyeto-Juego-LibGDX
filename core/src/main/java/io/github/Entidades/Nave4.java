@@ -14,7 +14,7 @@ public class Nave4 {
 	
 	private boolean destruida = false;
     private int vidas = 3;
-    private float velocidad = 5f;
+    private float velocidad = 2f;
     private Sprite spr;
     private Sound sonidoHerido;
     private Sound soundBala;
@@ -34,71 +34,48 @@ public class Nave4 {
 
     }
     public void draw(SpriteBatch batch, PantallaJuego juego){
-        float x =  spr.getX();
-        float y =  spr.getY();
-        if (!herido) {
-	        // que se mueva con teclado
-	        if (Gdx.input.isKeyPressed(Input.Keys.A)) x -= velocidad;
-	        if (Gdx.input.isKeyPressed(Input.Keys.D)) x += velocidad;
-        	if (Gdx.input.isKeyPressed(Input.Keys.S)) y-= velocidad;     
-	        if (Gdx.input.isKeyPressed(Input.Keys.W)) y+= velocidad;
-        	
-	     /*   if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) spr.setRotation(++rotacion);
-	        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) spr.setRotation(--rotacion);
-	        
-	        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-	        	xVel -=Math.sin(Math.toRadians(rotacion));
-	        	yVel +=Math.cos(Math.toRadians(rotacion));
-	        	System.out.println(rotacion+" - "+Math.sin(Math.toRadians(rotacion))+" - "+Math.cos(Math.toRadians(rotacion))) ;    
-	        }
-	        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-	        	xVel +=Math.sin(Math.toRadians(rotacion));
-	        	yVel -=Math.cos(Math.toRadians(rotacion));
-	        	     
-	        }*/
-	        
-	        // que se mantenga dentro de los bordes de la ventana
-	        if (x < 0) {
-	        	x = 0;
-	        }
-	        if(x + spr.getWidth() > Gdx.graphics.getWidth()) {
-	        	x = Gdx.graphics.getWidth()- spr.getWidth();
-	        }
-	        
-	        if (y < 0) {
-	        	y = 0;
-	        }
-            if (y + spr.getHeight() > Gdx.graphics.getHeight()) {
-            	y = Gdx.graphics.getHeight() - spr.getHeight();
-            }
-	   
+        float x = spr.getX();
+        float y = spr.getY();
 
+        // 1. EL MOVIMIENTO (Siempre funciona, estés herido o no)
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) x -= velocidad;
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) x += velocidad;
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) y -= velocidad;     
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) y += velocidad;
+        
+        // 2. LOS LÍMITES DE LA PANTALLA
+        if (x < 0) x = 0;
+        if (x + spr.getWidth() > Gdx.graphics.getWidth()) x = Gdx.graphics.getWidth() - spr.getWidth();
+        if (y < 0) y = 0;
+        if (y + spr.getHeight() > Gdx.graphics.getHeight()) y = Gdx.graphics.getHeight() - spr.getHeight();
+        
+        // Aplicamos la posición matemática a la imagen
+        spr.setPosition(x, y);   
+
+        // 3. EL DIBUJADO (Aquí sí importa si estás herido)
+        if (!herido) {
+            // Nave normal
+            spr.draw(batch);
         } else {
-           spr.setX(spr.getX()+MathUtils.random(-2,2));
- 		   spr.draw(batch); 
- 		  spr.setX(x);
- 		   tiempoHerido--;
- 		   if (tiempoHerido<=0) herido = false;
- 		 }
-        // disparo
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {         
-          Bullet  bala = new Bullet(spr.getX()+spr.getWidth()/2-5,spr.getY()+ spr.getHeight()-5,0,3,txBala);
-	      juego.agregarBala(bala);
-	      soundBala.play();
+            // Nave parpadeando
+            if (tiempoHerido % 10 > 5) {
+                spr.draw(batch); 
+            }
+            // Disminuir el tiempo de inmunidad
+            tiempoHerido--;
+            if (tiempoHerido <= 0) herido = false;
         }
-       
+
+        // 4. DISPARO
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {         
+            Bullet bala = new Bullet(spr.getX() + spr.getWidth()/2 - 5, spr.getY() + spr.getHeight() - 5, 0, 3, txBala);
+            juego.agregarBala(bala);
+            soundBala.play();
+        }
     }
       
     public boolean checkCollision(Ball2 b) {
         if(!herido && b.getArea().overlaps(spr.getBoundingRectangle())){
-        	// rebote
-        	
-            // despegar sprites
-      /*      int cont = 0;
-            while (b.getArea().overlaps(spr.getBoundingRectangle()) && cont<xVel) {
-               spr.setX(spr.getX()+Math.signum(xVel));
-            }   */
-        	//actualizar vidas y herir
             vidas--;
             herido = true;
   		    tiempoHerido=tiempoHeridoMax;
