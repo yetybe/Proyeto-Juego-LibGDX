@@ -1,4 +1,4 @@
-package io.github.Entidades;
+package io.github.Personaje;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

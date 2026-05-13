@@ -2,7 +2,8 @@ package io.github.Launcher.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import io.github.Entidades.SpaceNavigation;
+
+import io.github.Main.SpaceNavigation;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {

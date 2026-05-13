@@ -1,9 +1,11 @@
-package io.github.Entidades;
+package io.github.Pantallas;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
+
+import io.github.Main.SpaceNavigation;
 
 
 public class PantallaMenu implements Screen {

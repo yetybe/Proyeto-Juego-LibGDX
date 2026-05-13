@@ -1,4 +1,4 @@
-package io.github.Entidades;
+package io.github.Pantallas;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,6 +10,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import io.github.Main.SpaceNavigation;
+import io.github.Personaje.Ball2;
+import io.github.Personaje.Bullet;
+import io.github.Personaje.Jugador;
 
 
 public class PantallaJuego implements Screen {
@@ -25,7 +30,7 @@ public class PantallaJuego implements Screen {
 	private int velYAsteroides; 
 	private int cantAsteroides;
 	
-	private Nave4 nave;
+	private Jugador jugadorPersonaje;
 	private  ArrayList<Ball2> balls1 = new ArrayList<>();
 	private  ArrayList<Ball2> balls2 = new ArrayList<>();
 	private  ArrayList<Bullet> balas = new ArrayList<>();
@@ -53,7 +58,7 @@ public class PantallaJuego implements Screen {
 		gameMusic.play();
 		
 	    // cargar imagen de la nave, 64x64   
-	    nave = new Nave4(Gdx.graphics.getWidth()/2-50,30,new Texture(Gdx.files.internal("MainShip3.png")),
+	    nave = new Jugador(Gdx.graphics.getWidth()/2-50,30,new Texture(Gdx.files.internal("MainShip3.png")),
 	    				Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")), 
 	    				new Texture(Gdx.files.internal("Rocket2.png")), 
 	    				Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3"))); 

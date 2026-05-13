@@ -1,8 +1,10 @@
-package io.github.Entidades;
+package io.github.Main;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import io.github.Pantallas.PantallaMenu;
 
 
 
