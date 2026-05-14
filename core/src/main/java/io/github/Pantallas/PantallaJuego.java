@@ -1,5 +1,6 @@
 package io.github.Pantallas;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
@@ -11,14 +12,16 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import io.github.ConstructoresEnemigos.BuilderEnemigo;
+import io.github.ConstructoresEnemigos.BuilderMelee;
 import io.github.Main.SpaceNavigation;
-import io.github.Personaje.Ball2;
+import io.github.Personaje.Enemigo;
 import io.github.Personaje.Bullet;
 import io.github.Personaje.Jugador;
 
-
 public class PantallaJuego implements Screen {
-
+	
+	//Recursos para el loop game
 	private SpaceNavigation game;
 	private OrthographicCamera camera;	
 	private SpriteBatch batch;
@@ -26,145 +29,217 @@ public class PantallaJuego implements Screen {
 	private Music gameMusic;
 	private int score;
 	private int ronda;
-	private int velXAsteroides; 
-	private int velYAsteroides; 
-	private int cantAsteroides;
 	
+	//Recursos Jugador
 	private Jugador jugadorPersonaje;
-	private  ArrayList<Ball2> balls1 = new ArrayList<>();
-	private  ArrayList<Ball2> balls2 = new ArrayList<>();
 	private  ArrayList<Bullet> balas = new ArrayList<>();
+	
+	// Recursos para la horda
+	private Texture txEnemigoMelee;
+    private Sound sonidoDañoEnemigoMelee;
+    
+	private  ArrayList<BuilderEnemigo> listaConstructoresEnemigos = new ArrayList<>();
+	private  ArrayList<Enemigo> hordaEnemigos = new ArrayList<>();
+
+	// Temporizador de hordas
+	private float tiempoParaSpawn = 0;
+    private float intervaloSpawn = 2.0f;
 
 
-	public PantallaJuego(SpaceNavigation game, int ronda, int vidas, int score,  
-			int velXAsteroides, int velYAsteroides, int cantAsteroides) {
+	public PantallaJuego(SpaceNavigation game, int ronda, int vidas, int score  ) {
 		this.game = game;
 		this.ronda = ronda;
 		this.score = score;
-		this.velXAsteroides = velXAsteroides;
-		this.velYAsteroides = velYAsteroides;
-		this.cantAsteroides = cantAsteroides;
-		
+
 		batch = game.getBatch();
 		camera = new OrthographicCamera();	
 		camera.setToOrtho(false, 800, 640);
 		//inicializar assets; musica de fondo y efectos de sonido
 		explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
 		explosionSound.setVolume(1,0.5f);
-		gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav")); //
+		gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
 		
+		//Guardamos los Sprite y Sonidos de los enemigos
+		txEnemigoMelee = new Texture(Gdx.files.internal("MeleeEnemy.png"));       
+		sonidoDañoEnemigoMelee =Gdx.audio.newSound(Gdx.files.internal("MeleeEnemy-DamageSound.mp3"));
+		this.listaConstructoresEnemigos.add(new BuilderMelee(txEnemigoMelee, sonidoDañoEnemigoMelee));
+
 		gameMusic.setLooping(true);
 		gameMusic.setVolume(0.5f);
 		gameMusic.play();
 		
 	    // cargar imagen de la nave, 64x64   
-	    nave = new Jugador(Gdx.graphics.getWidth()/2-50,30,new Texture(Gdx.files.internal("MainShip3.png")),
-	    				Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")), 
-	    				new Texture(Gdx.files.internal("Rocket2.png")), 
-	    				Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3"))); 
-        nave.setVidas(vidas);
-        //crear asteroides
-        Random r = new Random();
-	    for (int i = 0; i < cantAsteroides; i++) {
-	        Ball2 bb = new Ball2(r.nextInt((int)Gdx.graphics.getWidth()),
-	  	            50+r.nextInt((int)Gdx.graphics.getHeight()-50),
-	  	            20+r.nextInt(10), velXAsteroides+r.nextInt(4), velYAsteroides+r.nextInt(4), 
-	  	            new Texture(Gdx.files.internal("aGreyMedium4.png")));	   
-	  	    balls1.add(bb);
-	  	    balls2.add(bb);
-	  	}
-	}
-    
+		jugadorPersonaje = new Jugador(
+			    Gdx.graphics.getWidth() / 2 - 50,                     // 1. int x
+			    30,                                                   // 2. int y
+			    new Texture(Gdx.files.internal("MainShip3.png")),     // 3. Texture tx
+			    new Texture(Gdx.files.internal("Rocket2.png")),       // 4. Texture txBala
+			    Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")),   // 5. Sound sonidoHerido
+			    Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3")) // 6. Sound soundBala
+			);
+        //crear enemigos
+ 
+		
+}    
 	public void dibujaEncabezado() {
-		CharSequence str = "Vidas: "+nave.getVidas()+" Ronda: "+ronda;
+		CharSequence str = "Vida Actual: "+jugadorPersonaje.getVidaActual()+" Ronda: "+ronda;
 		game.getFont().getData().setScale(2f);		
 		game.getFont().draw(batch, str, 10, 30);
 		game.getFont().draw(batch, "Score:"+this.score, Gdx.graphics.getWidth()-150, 30);
-		game.getFont().draw(batch, "HighScore:"+game.getHighScore(), Gdx.graphics.getWidth()/2-100, 30);
 	}
+	
 	@Override
 	public void render(float delta) {
-		  Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-          batch.begin();
-		  dibujaEncabezado();
-	      if (!nave.estaHerido()) {
-		      // colisiones entre balas y asteroides y su destruccion  
-	    	  for (int i = 0; i < balas.size(); i++) {
-		            Bullet b = balas.get(i);
-		            b.update();
-		            for (int j = 0; j < balls1.size(); j++) {    
-		              if (b.checkCollision(balls1.get(j))) {          
-		            	 explosionSound.play();
-		            	 balls1.remove(j);
-		            	 balls2.remove(j);
-		            	 j--;
-		            	 score +=10;
-		              }   	  
-		  	        }
-		                
-		         //   b.draw(batch);
-		            if (b.isDestroyed()) {
-		                balas.remove(b);
-		                i--; //para no saltarse 1 tras eliminar del arraylist
-		            }
-		      }
-		      //actualizar movimiento de asteroides dentro del area
-		      for (Ball2 ball : balls1) {
-		          ball.update();
-		      }
-		      //colisiones entre asteroides y sus rebotes  
-		      for (int i=0;i<balls1.size();i++) {
-		    	Ball2 ball1 = balls1.get(i);   
-		        for (int j=0;j<balls2.size();j++) {
-		          Ball2 ball2 = balls2.get(j); 
-		          if (i<j) {
-		        	  ball1.checkCollision(ball2);
-		     
-		          }
-		        }
-		      } 
-	      }
-	      //dibujar balas
-	     for (Bullet b : balas) {       
-	          b.draw(batch);
-	      }
-	      nave.draw(batch, this);
-	      //dibujar asteroides y manejar colision con nave
-	      for (int i = 0; i < balls1.size(); i++) {
-	    	    Ball2 b=balls1.get(i);
-	    	    b.draw(batch);
-		          //perdió vida o game over
-	              if (nave.checkCollision(b)) {
-		            //asteroide se destruye con el choque             
-	            	 balls1.remove(i);
-	            	 balls2.remove(i);
-	            	 i--;
-              }   	  
-  	        }
-	      
-	      if (nave.estaDestruido()) {
-  			if (score > game.getHighScore())
-  				game.setHighScore(score);
-	    	Screen ss = new PantallaGameOver(game);
-  			ss.resize(1200, 800);
-  			game.setScreen(ss);
-  			dispose();
-  		  }
-	      batch.end();
-	      //nivel completado
-	      if (balls1.size()==0) {
-			Screen ss = new PantallaJuego(game,ronda+1, nave.getVidas(), score, 
-					velXAsteroides+3, velYAsteroides+3, cantAsteroides+10);
-			ss.resize(1200, 800);
-			game.setScreen(ss);
-			dispose();
-		  }
-	    	 
+		
+		// 1. Matemáticas y Lógica (Update)
+        actualizarMundo(delta);
+        
+        // 2. Consecuencias y Limpieza
+        gestionarColisionesYLimpieza();
+        
+        // 3. (Draw)
+        dibujarPantalla();
+        
+        
+        verificarGameOver();
 	}
-    
+ 	 
+	
+	
+	
+	// --- MÉTODOS HELPER PRIVADOS ---
+
+    private void actualizarMundo(float delta) {
+        tiempoParaSpawn += delta;
+        if (tiempoParaSpawn >= intervaloSpawn) {
+            generarEnemigoAleatorio();
+            tiempoParaSpawn = 0;
+        }
+        
+        jugadorPersonaje.update(this);
+        for (Bullet bala : balas) {
+            bala.update(delta);
+        }
+        for (Enemigo enemigo : hordaEnemigos) {
+            enemigo.update(this);
+        }
+    }
+
+    private void gestionarColisionesYLimpieza() {
+        // Primero resolvemos quién se hizo daño
+        ballaCollsionEnemigo(balas, hordaEnemigos);
+        enemigoCollisionJugador(hordaEnemigos, jugadorPersonaje);
+        
+        // Se eliminan los cadáveres de los enemigosy 
+        Iterator<Enemigo> iterEnemigos = hordaEnemigos.iterator();
+        while (iterEnemigos.hasNext()) {
+            if (iterEnemigos.next().isMuerto()) {
+                iterEnemigos.remove(); 
+            }
+        }
+        
+    }
+
+    private void dibujarPantalla() {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        
+        dibujaEncabezado();
+        jugadorPersonaje.draw(batch);
+        
+        for (Enemigo enemigo : hordaEnemigos) {
+            enemigo.draw(batch);
+        }
+        for (Bullet bala : balas) {
+            bala.draw(batch);
+        }
+        
+        batch.end();
+    }
+
+    private void verificarGameOver() {
+        if (jugadorPersonaje.isMuerto()) {          
+            game.setScreen(new PantallaGameOver(game));
+            dispose(); 
+        }
+    }
+	
+	private void generarEnemigoAleatorio() {
+        Random r = new Random();
+        int lado = r.nextInt(4); // 0: Arriba, 1: Abajo, 2: Izquierda, 3: Derecha
+        
+        int x = 0;
+        int y = 0;
+        int anchoPantalla = Gdx.graphics.getWidth();
+        int altoPantalla = Gdx.graphics.getHeight();
+        int margen = 50; // Distancia extra fuera de la pantalla
+        
+        switch(lado) {
+            case 0: // Arriba
+                x = r.nextInt(anchoPantalla);
+                y = altoPantalla + margen;
+                break;
+            case 1: // Abajo
+                x = r.nextInt(anchoPantalla);
+                y = -margen;
+                break;
+            case 2: // Izquierda
+                x = -margen;
+                y = r.nextInt(altoPantalla);
+                break;
+            case 3: // Derecha
+                x = anchoPantalla + margen;
+                y = r.nextInt(altoPantalla);
+                break;
+        }
+        
+        int indiceAleatorio = r.nextInt(listaConstructoresEnemigos.size());
+        BuilderEnemigo constructorElegido = listaConstructoresEnemigos.get(indiceAleatorio);
+        
+        // 2. Aplicamos el Patrón Builder paso a paso
+        Enemigo nuevoEnemigo = constructorElegido.setPosicion(x, y).build();       
+        // 3. A la horda
+        hordaEnemigos.add(nuevoEnemigo);
+
+    }
+	
+	public void ballaCollsionEnemigo(ArrayList<Bullet> balas , ArrayList<Enemigo> enemigos  ){
+        for (Bullet bala : balas) {
+            for (Enemigo enemigo : hordaEnemigos) { 
+                
+                // No importa qué enemigo sea, todos tienen Hitbox y vida
+                if (bala.getArea().overlaps(enemigo.getArea())) {
+                    
+                    enemigo.recibirDaño(jugadorPersonaje.getDañoAtaque()); 
+                    bala.setDestroyed(true);
+                    explosionSound.play();
+                }
+            }
+        }	
+	}
+	
+	public void enemigoCollisionJugador(ArrayList<Enemigo> enemigos , Jugador pjJugador){
+		for (Enemigo enemigo : hordaEnemigos) { 
+                if (enemigo.getArea().overlaps(pjJugador.getArea())) {
+                    
+                    enemigo.atacar(jugadorPersonaje); 
+                    sonidoDañoEnemigoMelee.play();
+                }
+           }
+	}	
+
     public boolean agregarBala(Bullet bb) {
     	return balas.add(bb);
     }
+    
+    public OrthographicCamera getCamera() {
+        return this.camera;
+    }
+    
+    public Jugador getJugador() {
+        return this.jugadorPersonaje;
+    }
+    
 	
 	@Override
 	public void show() {

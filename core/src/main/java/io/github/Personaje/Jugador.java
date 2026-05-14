@@ -21,10 +21,10 @@ public class Jugador extends Entidad {
     private Sound soundBala;
     private Texture txBala;
     
-    public Jugador(int vidaMax, float velocidadMax, int dañoAtaque, Sprite spr, Sound sonidoHerido,
-    		 int x, int y, Texture tx, Texture txBala, Sound soundBala) {
+    public Jugador(int x, int y, Texture tx, Texture txBala,Sound sonidoHerido , Sound soundBala) {
     	
-    	super(vidaMax,velocidadMax,dañoAtaque, new Sprite(tx),sonidoHerido);
+    	//Vida Maxima(0) , Velocidad Maxima(1) y Daño Ataque(3)
+    	super(10,1.5f,2, new Sprite(tx),sonidoHerido);
     	
     	this.herido = false;
     	this.tiempoHeridoMax = 50;
@@ -40,7 +40,9 @@ public class Jugador extends Entidad {
     @Override
     public void update(PantallaJuego juego) {
         if (muerto) return; 
+        
 
+        
         float x = spr.getX();
         float y = spr.getY();
 
@@ -60,13 +62,9 @@ public class Jugador extends Entidad {
         spr.setPosition(x, y);
 
         // 3. DISPARO CON MOUSE
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {         
-            // Usamos las coordenadas del sprite heredado
-            Bullet bala = new Bullet(spr.getX() + spr.getWidth()/2 - 5, spr.getY() + spr.getHeight() - 5, 0, 3, txBala);
-            juego.agregarBala(bala);
-            soundBala.play();
+        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+        	dispararBala(juego);
         }
-
         // 4. TEMPORIZADOR DE INMUNIDAD
         if (herido) {
             tiempoHerido--;
@@ -74,6 +72,8 @@ public class Jugador extends Entidad {
                 herido = false; // Se acaba la inmunidad
             }
         }
+        
+        //
     }
     
     private void dispararBala(PantallaJuego juego) {
@@ -95,7 +95,7 @@ public class Jugador extends Entidad {
         float angulo = (float) Math.atan2(dy, dx);
         
         // F. Aplicar Seno y Coseno para obtener las velocidades finales
-        float velocidadBala = 10f; 
+        float velocidadBala = 400f; 
         float velX = (float) Math.cos(angulo) * velocidadBala;
         float velY = (float) Math.sin(angulo) * velocidadBala;
         
@@ -120,11 +120,17 @@ public class Jugador extends Entidad {
     }
       
 
+    public void  setPosicionSpr(int x , int y){ 
+    	float nuevaXpos = spr.getX() + x;
+    	float nuevaYpos = spr.getX() + y;
+    	spr.setPosition(nuevaXpos ,nuevaYpos );
+
+    }
     
-    public boolean estaDestruido() {return !herido && muerto;}
+    public boolean estaMuerto() {return !herido && muerto;}
     public boolean estaHerido() {return herido;}
-    public int getVidas() {return vidaActual;}
+    public int getVidaActual() {return vidaActual;}
     public int getX() {return (int) spr.getX();}
     public int getY() {return (int) spr.getY();}
-	public void setVidasMax(int vidas2) {vidaMax = vidas2;}
+	public void setVidasMax(int Puntovida) {vidaMax = Puntovida;}
 }
