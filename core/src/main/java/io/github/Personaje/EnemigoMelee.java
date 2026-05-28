@@ -7,10 +7,10 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import io.github.Pantallas.PantallaJuego;
 
 public class EnemigoMelee extends Enemigo{
-	
-	public EnemigoMelee(int vidaMax , float velocidad , int daño, Texture tx, Sound sonidoH, int x, int y) {         
+		
+	public EnemigoMelee(int vidaMax , float velocidad , int daño, int dropXp, Texture tx, Sound sonidoH, int x, int y) {         
         //  de vida máxima, 2f de velocidad, 10 de daño de ataque
-        super(vidaMax, velocidad, daño, new Sprite(tx), sonidoH);
+        super(vidaMax, velocidad, daño, new Sprite(tx), sonidoH , dropXp);
         
         this.spr.setPosition(x, y);
         this.spr.setBounds(x, y, 40, 40); // Tamaño del enemigo

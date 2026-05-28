@@ -7,25 +7,30 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
-
+import io.github.Pantallas.PantallaSubirLVL;
 import io.github.Pantallas.PantallaJuego;
 
 
 public class Jugador extends Entidad {
 	
-    private float velocidadActual;
     private boolean herido;
     private int tiempoHeridoMax;
     private int tiempoHerido;
     private Sound soundDañoAtaque;
     private Sound soundBala;
     private Texture txBala;
+    private int expJugador;
+    private int lvlJugador;
+    private int lvlCap;
     
     public Jugador(int x, int y, Texture tx, Texture txBala,Sound sonidoHerido , Sound soundBala) {
     	
     	//Vida Maxima(0) , Velocidad Maxima(1) y Daño Ataque(3)
     	super(10,1.5f,2, new Sprite(tx),sonidoHerido);
     	
+    	expJugador = 0;
+    	lvlJugador = 1;
+    	lvlCap = 20;
     	this.herido = false;
     	this.tiempoHeridoMax = 50;
     	this.soundBala = soundBala;
@@ -127,10 +132,33 @@ public class Jugador extends Entidad {
 
     }
     
+    public boolean ganarXp(int cantidadXp) {
+    	expJugador += cantidadXp;
+    	boolean subirNivel = false;
+
+        // Mientras tenga suficiente XP para subir (usamos while por si gana mucha XP de golpe)
+        while (expJugador >= lvlCap) {
+        	expJugador = 0;
+        	lvlJugador++;   	
+        	lvlCap = (int)(lvlCap *= 1.4f);
+        	subirNivel = true;
+        }
+        return subirNivel;
+    }
+    
     public boolean estaMuerto() {return !herido && muerto;}
     public boolean estaHerido() {return herido;}
+    public int getVidaMax() { return vidaMax;}
     public int getVidaActual() {return vidaActual;}
     public int getX() {return (int) spr.getX();}
     public int getY() {return (int) spr.getY();}
-	public void setVidasMax(int Puntovida) {vidaMax = Puntovida;}
+    public int getLvl() { return lvlJugador;}
+    public int getExp() { return expJugador;}
+    public int getLvlCap() { return lvlCap;}
+    public float getVelMax() { return this.velocidadMax;}
+ 
+    public void setDañoAtaque(int dmg) { dañoAtaque = dmg;}
+	public void setVidaMax(int Puntosvida) {vidaMax = Puntosvida;}
+	public void setVidaActual(int totalVida) {vidaActual = totalVida;}
+	public void setVelocidadMax(float nuevaVel) {this.velocidadMax = nuevaVel;}
 }

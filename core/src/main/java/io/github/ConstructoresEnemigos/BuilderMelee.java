@@ -30,6 +30,7 @@ public class BuilderMelee implements BuilderEnemigo {
 	        int vidaBase = 7;
 	        float velBase = 1f;
 	        int dañoBase = 2;
-	        return new EnemigoMelee(vidaBase, velBase, dañoBase, textura, sonido, x, y);	    }
+	        int dropXp = 1;
+	        return new EnemigoMelee(vidaBase, velBase, dañoBase, dropXp ,textura, sonido, x, y);	    }
 }
 

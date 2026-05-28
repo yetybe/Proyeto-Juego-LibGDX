@@ -18,6 +18,7 @@ import io.github.Main.SpaceNavigation;
 import io.github.Personaje.Enemigo;
 import io.github.Personaje.Bullet;
 import io.github.Personaje.Jugador;
+import io.github.Pantallas.PantallaSubirLVL;
 
 public class PantallaJuego implements Screen {
 	
@@ -27,7 +28,6 @@ public class PantallaJuego implements Screen {
 	private SpriteBatch batch;
 	private Sound explosionSound;
 	private Music gameMusic;
-	private int score;
 	private int ronda;
 	
 	//Recursos Jugador
@@ -46,10 +46,9 @@ public class PantallaJuego implements Screen {
     private float intervaloSpawn = 2.0f;
 
 
-	public PantallaJuego(SpaceNavigation game, int ronda, int vidas, int score  ) {
+	public PantallaJuego(SpaceNavigation game, int ronda, int vidas) {
 		this.game = game;
 		this.ronda = ronda;
-		this.score = score;
 
 		batch = game.getBatch();
 		camera = new OrthographicCamera();	
@@ -82,14 +81,30 @@ public class PantallaJuego implements Screen {
 		
 }    
 	public void dibujaEncabezado() {
-		CharSequence str = "Vida Actual: "+jugadorPersonaje.getVidaActual()+" Ronda: "+ronda;
-		game.getFont().getData().setScale(2f);		
-		game.getFont().draw(batch, str, 10, 30);
-		game.getFont().draw(batch, "Score:"+this.score, Gdx.graphics.getWidth()-150, 30);
-	}
+        game.getFont().getData().setScale(2f);        
+        
+        int altoPantalla = Gdx.graphics.getHeight();
+        int anchoPantalla = Gdx.graphics.getWidth();
+        
+        int margenSuperiorY = altoPantalla - 20; 
+
+        CharSequence strVida = "Vida: " + jugadorPersonaje.getVidaActual() + " | Ronda: " + ronda;
+        game.getFont().draw(batch, strVida, 20, margenSuperiorY);
+        
+        CharSequence strExp = "Exp: " + jugadorPersonaje.getExp() + " / " + jugadorPersonaje.getLvlCap();
+        game.getFont().draw(batch, strExp, (anchoPantalla / 2) - 80, margenSuperiorY);
+
+        CharSequence strLvl = "Nivel: " + jugadorPersonaje.getLvl();
+        game.getFont().draw(batch, strLvl, anchoPantalla - 150, margenSuperiorY);
+    }
 	
 	@Override
 	public void render(float delta) {
+		
+		if(delta == 0) {
+	        dibujarPantalla();
+	        return;
+		}
 		
 		// 1. Matemáticas y Lógica (Update)
         actualizarMundo(delta);
@@ -130,14 +145,23 @@ public class PantallaJuego implements Screen {
         ballaCollsionEnemigo(balas, hordaEnemigos);
         enemigoCollisionJugador(hordaEnemigos, jugadorPersonaje);
         
-        // Se eliminan los cadáveres de los enemigosy 
+        // Se eliminan los cadáveres de los enemigos 
         Iterator<Enemigo> iterEnemigos = hordaEnemigos.iterator();
         while (iterEnemigos.hasNext()) {
-            if (iterEnemigos.next().isMuerto()) {
-                iterEnemigos.remove(); 
+        	Enemigo e = iterEnemigos.next();
+            if (e.isMuerto()) {
+            	if (jugadorPersonaje.ganarXp(e.getDropXp())) {
+            		game.setScreen(new PantallaSubirLVL(game, this, jugadorPersonaje));                	}
+            	iterEnemigos.remove(); 
             }
         }
         
+        Iterator<Bullet> iterBalas = balas.iterator();
+        while(iterBalas.hasNext()){
+        	if(iterBalas.next().isDestroyed()) {
+        		iterBalas.remove();
+        	}
+        }   
     }
 
     private void dibujarPantalla() {
@@ -211,8 +235,8 @@ public class PantallaJuego implements Screen {
                 if (bala.getArea().overlaps(enemigo.getArea())) {
                     
                     enemigo.recibirDaño(jugadorPersonaje.getDañoAtaque()); 
-                    bala.setDestroyed(true);
                     explosionSound.play();
+                    bala.setDestroyed(true);
                 }
             }
         }	
