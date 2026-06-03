@@ -12,7 +12,8 @@ import io.github.Pantallas.PantallaJuego;
 
 
 public class Jugador extends Entidad {
-	
+	private float cadenciaAtaque; 	
+	private float temporizadorDisparo; 
     private boolean herido;
     private int tiempoHeridoMax;
     private int tiempoHerido;
@@ -31,10 +32,13 @@ public class Jugador extends Entidad {
     	expJugador = 0;
     	lvlJugador = 1;
     	lvlCap = 20;
+    	this.cadenciaAtaque = 0.5f; // medio segundo
+    	this.temporizadorDisparo = 0f;
     	this.herido = false;
     	this.tiempoHeridoMax = 50;
     	this.soundBala = soundBala;
     	this.txBala = txBala;
+   
     	
     	this.spr.setPosition(x, y);
     	//spr.setOriginCenter();
@@ -67,8 +71,12 @@ public class Jugador extends Entidad {
         spr.setPosition(x, y);
 
         // 3. DISPARO CON MOUSE
-        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+        temporizadorDisparo += Gdx.graphics.getDeltaTime();
+
+        // Si el cronómetro supera nuestra cadencia, disparamos y reiniciamos el reloj
+        if (temporizadorDisparo >= cadenciaAtaque) {
         	dispararBala(juego);
+        	temporizadorDisparo = 0f; // Reiniciamos el contador
         }
         // 4. TEMPORIZADOR DE INMUNIDAD
         if (herido) {
@@ -165,6 +173,8 @@ public class Jugador extends Entidad {
     public int getExp() { return expJugador;}
     public int getLvlCap() { return lvlCap;}
     public float getVelMax() { return this.velocidadMax;}
+    public float getCadenciaAtaque() { return cadenciaAtaque; }
+    public void setCadenciaAtaque(float cadencia) { this.cadenciaAtaque = cadencia; }
  
     public void setDañoAtaque(int dmg) { dañoAtaque = dmg;}
 	public void setVidaMax(int Puntosvida) {vidaMax = Puntosvida;}

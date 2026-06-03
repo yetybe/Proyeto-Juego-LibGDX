@@ -51,6 +51,7 @@ public class PantallaSubirLVL implements Screen {
         game.getFont().draw(game.getBatch(), "[1] Aumentar Daño (+2)", 400, 400);
         game.getFont().draw(game.getBatch(), "[2] Aumentar Vida Máxima (+2)", 400, 350);
         game.getFont().draw(game.getBatch(), "[3] Aumentar Velocidad (+0.25)", 400, 300);
+        game.getFont().draw(game.getBatch(), "[4] Aumentar Vel. de Ataque (-0.05s)", 400, 250);
         
         game.getBatch().end();
 
@@ -71,8 +72,20 @@ public class PantallaSubirLVL implements Screen {
             
             pjJugador.setVelocidadMax(pjJugador.getVelMax() + 0.5f);
             volverAlJuego();
-            
-        }
+        
+		} else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
+	    
+			// Le restamos 0.05 segundos al tiempo de disparo
+			float nuevaCadencia = pjJugador.getCadenciaAtaque() - 0.05f;
+	    
+			// Ponemos un límite para que no baje de 0.1 segundos (para que no dispare infinito y rompa el juego)
+			if (nuevaCadencia < 0.1f) {
+				nuevaCadencia = 0.1f;
+			}
+	    
+			pjJugador.setCadenciaAtaque(nuevaCadencia);
+			volverAlJuego();
+		}
     }
 
     // Método auxiliar para no repetir código
