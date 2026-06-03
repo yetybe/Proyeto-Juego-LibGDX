@@ -21,7 +21,7 @@ import io.github.Personaje.Jugador;
 import io.github.Pantallas.PantallaSubirLVL;
 
 public class PantallaJuego implements Screen {
-	//commit
+	
 	//Recursos para el loop game
 	private SpaceNavigation game;
 	private OrthographicCamera camera;	
