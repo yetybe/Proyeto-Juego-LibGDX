@@ -68,7 +68,7 @@ public class PantallaJuego implements Screen {
 		
 		batch = game.getBatch();
 		camera = new OrthographicCamera();	
-		camera.setToOrtho(false, 800, 640);
+		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		//inicializar assets; musica de fondo y efectos de sonido
 		explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
 		explosionSound.setVolume(1,0.5f);
@@ -182,6 +182,8 @@ public class PantallaJuego implements Screen {
 
     private void dibujarPantalla() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.update(); 
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
         
         dibujaEncabezado();
@@ -289,8 +291,7 @@ public class PantallaJuego implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-		
+	    camera.setToOrtho(false, width, height);
 	}
 
 	@Override
