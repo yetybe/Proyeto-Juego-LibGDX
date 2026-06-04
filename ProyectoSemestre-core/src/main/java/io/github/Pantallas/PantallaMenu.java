@@ -22,23 +22,29 @@ public class PantallaMenu implements Screen {
 
 	@Override
 	public void render(float delta) {
-		ScreenUtils.clear(0, 0, 0.2f, 1);
+	    ScreenUtils.clear(0, 0, 0.2f, 1);
 
-		camera.update();
-		game.getBatch().setProjectionMatrix(camera.combined);
+	    camera.update();
+	    game.getBatch().setProjectionMatrix(camera.combined);
 
-		game.getBatch().begin();
-		game.getFont().draw(game.getBatch(), "Bienvenido a Space Navigation !", 140, 400);
-		game.getFont().draw(game.getBatch(), "Pincha en cualquier lado o presiona cualquier tecla para comenzar ...", 100, 300);
-	
-		game.getBatch().end();
+	    game.getBatch().begin();
+	    game.getFont().draw(game.getBatch(), "Bienvenido a Space Navigation !", 140, 400);
+	    game.getFont().draw(game.getBatch(), "Presiona [1] para Modo Normal", 100, 300);
+	    game.getFont().draw(game.getBatch(), "Presiona [2] para Modo Desarrollador", 100, 250);
+	    game.getBatch().end();
 
-		if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) {
-			Screen ss = new PantallaJuego(game,1,10);
-			ss.resize(1200, 800);
-			game.setScreen(ss);
-			dispose();
-		}
+	    if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+	        iniciarJuego(false); // Normal
+	    } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+	        iniciarJuego(true);  // Developer
+	    }
+	}
+
+	private void iniciarJuego(boolean isDeveloper) {
+	    Screen ss = new PantallaJuego(game, 1, 10, isDeveloper); 
+	    ss.resize(1200, 800);
+	    game.setScreen(ss);
+	    dispose();
 	}
 	
 	

@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -15,14 +16,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.ConstructoresEnemigos.BuilderEnemigo;
 import io.github.ConstructoresEnemigos.BuilderMelee;
 import io.github.Main.SpaceNavigation;
-import io.github.Personaje.Enemigo;
 import io.github.Personaje.Bullet;
+import io.github.Personaje.Enemigo;
 import io.github.Personaje.Jugador;
-import io.github.Pantallas.PantallaSubirLVL;
 
 public class PantallaJuego implements Screen {
 	
 	//Recursos para el loop game
+	private boolean isDeveloperMode;
 	private SpaceNavigation game;
 	private OrthographicCamera camera;	
 	private SpriteBatch batch;
@@ -48,10 +49,11 @@ public class PantallaJuego implements Screen {
     private float intervaloSpawn = 2.0f;
 
 
-	public PantallaJuego(SpaceNavigation game, int ronda, int vidas) {
+	public PantallaJuego(SpaceNavigation game, int ronda, int vidas, boolean isDeveloperMode) {
 
 		this.game = game;
 		this.ronda = ronda;
+		this.isDeveloperMode = isDeveloperMode;
 		
 		//inicializar recursos jugador
 		txJugador = new Texture(Gdx.files.internal("MainShip3.png"));
@@ -113,28 +115,30 @@ public class PantallaJuego implements Screen {
 
         CharSequence strLvl = "Nivel: " + jugadorPersonaje.getLvl();
         game.getFont().draw(batch, strLvl, anchoPantalla - 150, margenSuperiorY);
+        
     }
 	
 	@Override
-	public void render(float delta) {
-		
-		if(delta == 0) {
-	        dibujarPantalla();
-	        return;
-		}
-		
-		// 1. Matemáticas y Lógica (Update)
+    public void render(float delta) {
+
+        // --- 1. COMANDOS DE DESARROLLADOR (CHEATS) ---
+        if (isDeveloperMode) {
+            // subir de nivel
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+                jugadorPersonaje.forzarSubirNivel();
+                game.setScreen(new PantallaSubirLVL(game, this, jugadorPersonaje));
+            }
+            // god mode
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+                jugadorPersonaje.toggleGodMode();
+            }
+        }
+        if (delta == 0) return;
         actualizarMundo(delta);
-        
-        // 2. Consecuencias y Limpieza
         gestionarColisionesYLimpieza();
-        
-        // 3. (Draw)
-        dibujarPantalla();
-        
-        
         verificarGameOver();
-	}
+        dibujarPantalla(); 
+    }
  	 
 	
 	
@@ -196,6 +200,12 @@ public class PantallaJuego implements Screen {
             bala.draw(batch);
         }
         
+        if (isDeveloperMode) {
+            game.getFont().draw(batch, "1: +1 nivel // 2: godmode", 20, 30);
+            if (jugadorPersonaje.isGodMode()) {
+                game.getFont().draw(batch, "GOD MODE: ACTIVADO", 20, 55);
+            }
+        }
         batch.end();
     }
 

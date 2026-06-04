@@ -23,6 +23,7 @@ public class Jugador extends Entidad {
     private int expJugador;
     private int lvlJugador;
     private int lvlCap;
+    private boolean godMode = false;
     
     public Jugador(int x, int y, Texture tx, Texture txBala,Sound sonidoHerido , Sound soundBala) {
     	
@@ -133,6 +134,7 @@ public class Jugador extends Entidad {
     }
       
     public void  setPosicionSpr(int x , int y){ 
+    	if (godMode) return;
     	float nuevaXpos = spr.getX() + x;
     	float nuevaYpos = spr.getY() + y;
     	spr.setPosition(nuevaXpos ,nuevaYpos );
@@ -155,12 +157,22 @@ public class Jugador extends Entidad {
     
     @Override
     public void recibirDaño(int dañoRecibido) {
-        if (herido || muerto) return;
+        if (godMode || herido || muerto) return;
         
         super.recibirDaño(dañoRecibido); 
         
         this.herido = true;
         this.tiempoHerido = this.tiempoHeridoMax;
+    }
+    
+    public boolean isGodMode() { return godMode; }
+    
+    public void toggleGodMode() { this.godMode = !this.godMode; }
+
+    public void forzarSubirNivel() {
+        int expFaltante = this.lvlCap - this.expJugador;
+        this.ganarXp(expFaltante); 
+        this.expJugador = 0;
     }
     
     public boolean estaMuerto() {return !herido && muerto;}
